@@ -85,7 +85,9 @@ class MIESPatchClamp(PatchClamp):
                 self._state[key] = pg.siEval(f"{val['value']} {val['unit']}")
             
             if key.startswith('HoldingPotential'):
-                self.sigHoldingChanged.emit('VC', self.getHolding('VC'))
+                h = self.getHolding('VC')
+                print("holding changed!", h)
+                self.sigHoldingChanged.emit('VC', h)
             elif key.startswith('BiasCurrent'):
                 self.sigHoldingChanged.emit('IC', self.getHolding('IC'))
 
@@ -139,7 +141,7 @@ class MIESPatchClamp(PatchClamp):
     def enableAutoBias(self, enable=True):
         self.setTestPulseParameters(autoBiasEnabled=enable)
         if self.autoBiasEnabled() != enable:
-            self.mies.setAutoBiasEnabled(self._headstage, enable)
+            self.mies.setAutoBias(self._headstage, self.autoBiasTarget(), enable)
             self.sigAutoBiasChanged.emit(self, enable, self.autoBiasTarget())
 
     def autoBiasEnabled(self):
@@ -161,7 +163,7 @@ class MIESPatchClamp(PatchClamp):
             self.sigAutoBiasChanged.emit(self, enabled, target_value)
 
     def _updateAutoBiasTarget(self, target):
-        return self.mies.setAutoBiasTarget(self._headstage, target)
+        return self.mies.setAutoBias(self._headstage, target, self.autoBiasEnabled())
 
     def autoBiasTarget(self):
         if self._auto_bias_target_from_vc:
